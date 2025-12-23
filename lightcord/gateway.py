@@ -60,8 +60,8 @@ class Gateway():
                 'intents': self.intents,
                 'properties': {
                     'os': 'linux',
-                    'browser': 'dispy-lib',
-                    'device': 'dispy-lib'
+                    'browser': 'lightcord',
+                    'device': 'lightcord'
                 }
             }
         }
