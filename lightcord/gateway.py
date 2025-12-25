@@ -51,6 +51,12 @@ class Gateway():
                     print(message.data)
         finally:
             await self.ws.close()
+            if self.heartbeats.running:
+                self.heartbeats.stop()
+            
+    async def stop(self):
+        if self.ws and not self.ws.closed:
+            await self.ws.close()
             
     async def identify(self):
         payload = {
@@ -75,8 +81,13 @@ class Gateway():
                 self.heartbeats.run(self.ws, d['d']['heartbeat_interval'] / 1000)
                 await self.identify()
             elif d['op'] == 11:
-                print('Heartbeat aknowledged')
-                print(d)
+                pass
             else:
                 if d['t'] == "READY":
                     print('The client is ready!')
+                    await self.stop()
+                    
+                else:
+                    print('Unknown event!')
+                    print(d['t'])
+                    print(d)

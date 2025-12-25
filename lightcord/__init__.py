@@ -23,9 +23,10 @@
 from lightcord.gateway import Gateway
 from lightcord.literals import Events
 from typing import Callable
+import asyncio
 
 class Client():
-    def __init__(self, token: str, intents: int | str = None):
+    def __init__(self, token: str = None, intents: int | str = 0):
         """Define a discord client.
         
         :param token: Your private token. You can get it on your Developer Portal.
@@ -34,7 +35,7 @@ class Client():
         :type intents: Optional `int | str`"""
         # Main Variables
         self.token = token
-        if intents: self.intents = int(intents)
+        self.intents = int(intents)
         
         # Modules
         self.gateway = Gateway(token=self.token, intents=self.intents)
@@ -42,15 +43,59 @@ class Client():
         # Functionalites
         self.handler = {}
         
-    async def start(self):
-        """Start your client, make it online and able to receive events from discord."""
-        await self.gateway.start()
+    def start(self, token: str = None) -> None:
+        """Start your client, making it online and able to receive events from discord.
+        :param token: Your private token. You can get it on your Developer Portal.
+        :type token: `str`"""
+        if token:
+            self.token = token
         
-    async def on(self, eventname: Events = None, function: Callable = None, *, once: bool = False) -> None:
+        asyncio.run(self.gateway.start())
+        
+    def stop(self) -> None:
+        """Stop your client gracefully, making it offline and unable to receive events from discord."""
+        asyncio.run(self.gateway.stop())
+        
+    def on(self, event: Events = None, function: Callable = None, *, once: bool = False) -> None:
         """
-        Add a function to call when a specific event is dispatched.
+        Will call `function` when `event` happen. Will automatically add needed intents if intents are not defined by the user.
+        
+        Can be used as a decorator: 
+        ```
+        @bot.on("READY")
+        def on_ready():
+            print("READY!")
+        ```
+        :param event: The event that will trigger the defined `function`.
+        :type event: `str`
+        :param function: The function that will be called when the defined `event` happen.
+        :type function: `Callable`
+        :param once: Will make the function be triggered once when `event` happens, making others occurrences be ignored.
+        :type once: `bool`
         """
         def decorator(fn):
-            pass
+            print(fn)
+        if function is not None: return decorator(function)
+        else: return decorator
+        
+    def once(self, event: Events = None, function: Callable = None) -> None:
+        """
+        Will call `function` once when `event` happen. Will automatically add needed intents if intents are not defined by the user. 
+        
+        The `function` will be called once, others occurrences of the `event` will be ignored.
+        
+        Can be used as a decorator: 
+        ```
+        @bot.once("READY")
+        def on_ready():
+            print("READY!")
+        ```
+        :param event: The event that will trigger the defined `function`.
+        :type event: `str`
+        :param function: The function that will be called when the defined `event` happen.
+        :type function: `Callable`
+        """
+        def decorator(fn):
+            self.on(event = event, function = fn)
         if function is not None: return decorator(function)
         else: return decorator
