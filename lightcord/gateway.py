@@ -84,10 +84,7 @@ class Gateway():
                 pass
             else:
                 if d['t'] == "READY":
-                    print('The client is ready!')
-                    await self.stop()
-                    
+                    print('The client is ready!')   
                 else:
                     print('Unknown event!')
                     print(d['t'])
-                    print(d)
