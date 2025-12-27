@@ -21,6 +21,7 @@
 * **License:** [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.fr.html)"""
 
 from lightcord.gateway import Gateway
+from lightcord.handlers import Handlers
 from lightcord.literals import Events
 from typing import Callable
 import asyncio
@@ -38,10 +39,8 @@ class Client():
         self.intents = int(intents)
         
         # Modules
-        self.gateway = Gateway(token=self.token, intents=self.intents)
-        
-        # Functionalites
-        self.handler = {}
+        self.handlers = Handlers()
+        self.gateway = Gateway(token = self.token, intents = self.intents, handlers = self.handlers)
         
     def start(self, token: str = None) -> None:
         """Start your client, making it online and able to receive events from discord.
@@ -74,7 +73,11 @@ class Client():
         :type once: `bool`
         """
         def decorator(fn):
-            print(fn)
+            self.handlers.add_handler(
+                event,
+                fn,
+                once
+            )
         if function is not None: return decorator(function)
         else: return decorator
         
@@ -96,6 +99,6 @@ class Client():
         :type function: `Callable`
         """
         def decorator(fn):
-            self.on(event = event, function = fn)
+            self.on(event = event, function = fn, once = True)
         if function is not None: return decorator(function)
         else: return decorator

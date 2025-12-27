@@ -19,15 +19,17 @@ import asyncio
 import threading
 import json
 from lightcord.heartbeats import Heartbeats
+from lightcord.handlers import Handlers
 
 class Gateway():
-    def __init__(self, token, intents):
+    def __init__(self, token: str, intents: int, handlers: Handlers):
         self.token = token
         self.ws = None
         self.intents = intents
         self.loop = asyncio.new_event_loop()
         self.session = None
         self.heartbeats = Heartbeats()
+        self.handlers = handlers
         
     def run_loop(self):
         asyncio.set_event_loop(self.loop)
@@ -77,14 +79,10 @@ class Gateway():
         async for msg in self.ws:
             d = json.loads(msg.data)
             
-            if d['op'] == 10:
+            if d['op'] == 0: # Event
+                await self.handlers.call_handlers(d['t'], d['d'])
+            elif d['op'] == 10: # After connecting
                 self.heartbeats.run(self.ws, d['d']['heartbeat_interval'] / 1000)
                 await self.identify()
-            elif d['op'] == 11:
+            elif d['op'] == 11: # Heartbeat acknowledgement
                 pass
-            else:
-                if d['t'] == "READY":
-                    print('The client is ready!')   
-                else:
-                    print('Unknown event!')
-                    print(d['t'])
