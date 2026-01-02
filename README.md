@@ -1,6 +1,8 @@
 # Lightcord
 A lightweight, modern and optimized Discord API wrapper for Python.
 
+Current state of Lightcord: **`Unusable`**
+
 > [!NOTE]
 > Discord is trademark of Discord Inc. Lightcord is not affiliated with or endorsed by Discord Inc. 
 
