@@ -34,6 +34,7 @@ class Gateway():
 
         self.heartbeats_interval: float = None
         self.s_number_of_events: int = None
+        self.waiting_for_heartbeat_ack: bool = False
 
     async def start(self):
         if self.token is None:
@@ -48,6 +49,7 @@ class Gateway():
             pass
 
     async def stop(self):
+        await self.close(1000)
         if self.websocket_task:
             self.websocket_task.cancel()
             with suppress(asyncio.CancelledError):
@@ -65,12 +67,16 @@ class Gateway():
         except asyncio.CancelledError:
             raise
         finally:
-            if self.ws and not self.ws.closed: await self.ws.close()
-            if self.session and not self.session.closed: await self.session.close()
-            if self.heartbeats_task:
-                self.heartbeats_task.cancel()
-                with suppress(asyncio.CancelledError):
-                    await self.heartbeats_task
+            await self.close(1000)
+    
+    async def close(self, code):
+        if self.ws and not self.ws.closed: 
+            await self.ws.close(code = code)
+        if self.session and not self.session.closed: await self.session.close()
+        if self.heartbeats_task:
+            self.heartbeats_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self.heartbeats_task
             
     async def identify(self):
         payload = {
@@ -93,7 +99,12 @@ class Gateway():
             while True:
                 # The random is just a jitter asked by discord, only for the first heartbeat.
                 await asyncio.sleep(self.heartbeats_interval * random() if first else self.heartbeats_interval)
+                if self.waiting_for_heartbeat_ack: # Closes connection if it is "zombified"
+                    await self.close(1006)
+                    break
                 await self.ws.send_json({"op": 1, "d": self.s_number_of_events})
+                print("HEARTBEAT")
+                self.waiting_for_heartbeat_ack = True
                 first = False
         except asyncio.CancelledError:
             raise
@@ -112,4 +123,4 @@ class Gateway():
                 self.heartbeats_task = asyncio.create_task(self.heartbeats())
                 await self.identify()
             elif d['op'] == 11: # Heartbeat acknowledgement
-                pass
+                self.waiting_for_heartbeat_ack = False
