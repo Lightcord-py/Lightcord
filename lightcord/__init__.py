@@ -27,6 +27,9 @@ from typing import Callable
 from inspect import iscoroutinefunction
 import asyncio
 
+import logging
+logger = logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 class Client():
     def __init__(self, token: str = None, intents: int | str = 0):
         """Define a discord client.

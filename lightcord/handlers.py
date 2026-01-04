@@ -17,6 +17,9 @@
 from typing import Callable
 import asyncio
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Handlers:
     def __init__(self):
         self.handlers = {}
@@ -27,7 +30,9 @@ class Handlers:
             "fn": fn,
             "once": once
         })
+        logger.debug(f"Successfully defined {fn} as an handler for {event.upper()} (once: {once}).")
         
     async def call_handlers(self, event: str, data: dict):
+        logger.debug(f"{event} was dispatched.")
         for handler in self.handlers.get(event, []):
             asyncio.create_task(handler["fn"]())

@@ -21,6 +21,9 @@ from lightcord.handlers import Handlers
 from contextlib import suppress
 from random import random
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Gateway():
     def __init__(self, token: str = None, intents: int = None):
         self.token = token
@@ -49,6 +52,7 @@ class Gateway():
             pass
 
     async def stop(self):
+        logging.info("Stop was requested by user code.")
         await self.close(1000)
         if self.websocket_task:
             self.websocket_task.cancel()
@@ -56,13 +60,17 @@ class Gateway():
                 await self.websocket_task
         
     async def websocket(self):
+        url = "wss://gateway.discord.gg/?v=10&encoding=json"
+
+        logging.info(f"Connecting to gateway ({url})...")
         try:
-            async with self.session.ws_connect('wss://gateway.discord.gg/?v=10&encoding=json') as ws:
+            async with self.session.ws_connect(url) as ws:
                 self.ws = ws
                 await self.opcodes()
 
                 if ws.closed:
                     message = await ws.receive()
+                    logging.error(f"Connection was closed by discord with close code {ws.close_code} and message: {message.data}")
                     #print(ws.close_code, message.data)
         except asyncio.CancelledError:
             raise
@@ -72,6 +80,10 @@ class Gateway():
     async def close(self, code):
         if self.ws and not self.ws.closed: 
             await self.ws.close(code = code)
+            if code == 1000:
+                logging.info(f"Connection was normally closed with code {code}.")
+            else:
+                logging.error(f"Connection was abnormally closed with code {code}.")
         if self.session and not self.session.closed: await self.session.close()
         await self.stop_heartbeats()
 
@@ -82,6 +94,7 @@ class Gateway():
                 await self.heartbeats_task
             
     async def identify(self):
+        logging.info(f"Sending Identify with token and intents ({self.intents}).")
         payload = {
             'op': 2,
             'd': {
@@ -104,6 +117,7 @@ class Gateway():
                 if not skip or not first:
                     await asyncio.sleep(self.heartbeats_interval * random() if first else self.heartbeats_interval)
                 if self.waiting_for_heartbeat_ack: # Closes connection if it is "zombified"
+                    logging.error("No heartbeat ACK received, connection is considered as dead.")
                     await self.close(1006)
                     break
                 await self.ws.send_json({"op": 1, "d": self.s_number_of_events})
@@ -121,8 +135,11 @@ class Gateway():
             
             if d['op'] == 0: # Event
                 await self.handlers.call_handlers(d['t'], d['d'])
+                if d['t'] == "READY":
+                    logging.info(f"Connection successfully opened with gateway! Logged as {d['d']['user']['username']}#{d['d']['user']['discriminator']}.")
 
             elif d['op'] == 1: # Heartbeat request
+                logging.info("Heartbeat requested by Discord, restarting loop and skipping first interval.")
                 self.waiting_for_heartbeat_ack = False
                 await self.stop_heartbeats()
                 self.heartbeats_task = asyncio.create_task(self.heartbeats(True))

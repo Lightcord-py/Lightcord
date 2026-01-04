@@ -6,15 +6,20 @@ Current state of Lightcord: **`Unusable`**
 > [!NOTE]
 > Discord is trademark of Discord Inc. Lightcord is not affiliated with or endorsed by Discord Inc. 
 
-## Roadmap
+## To-Do
+Part 1 - The basis
 - [X] Gateway
 - [X] Handlers
-- [ ] Handlers data
-- [ ] Direct & non-direct messages
-- [ ] Intents calculator
-- [ ] Functions in types & events
+- [ ] Handlers Arguments
+- [ ] Rest API
+- [ ] Intents Calculation
+- [X] Logging
+
+Part 2 - Intermediate
 - [ ] Sharding
-- [ ] Auto resume
+- [ ] Slash Commands
+- [ ] Avoid/Handle 429s
+- [ ] Resume
 
 ## License
 
