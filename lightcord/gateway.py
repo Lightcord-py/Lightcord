@@ -21,6 +21,13 @@ from lightcord.handlers import Handlers
 from contextlib import suppress
 from random import random
 
+#    __ _       _     _                    _ 
+#   / /(_) __ _| |__ | |_ ___ ___  _ __ __| |
+#  / / | |/ _` | '_ \| __/ __/ _ \| '__/ _` |
+# / /__| | (_| | | | | || (_| (_) | | | (_| |
+# \____/_|\__, |_| |_|\__\___\___/|_|  \__,_|
+#         |___/                              
+
 import logging
 logger = logging.getLogger(__name__)
 

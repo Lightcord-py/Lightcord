@@ -23,7 +23,7 @@ class Message_Delete(TypeData):
     channel_id: Snowflake
     guild_id: Snowflake
 
-def main(data):
-    return {"deleted": Message_Delete(data)}
+def main(data, api):
+    return {"deleted": Message_Delete(data, api=api)}
 
 __types__ = {"deleted": Message_Delete}

@@ -37,7 +37,7 @@ class Ready(TypeData):
     auth: dict
     application: Application
 
-def main(data):
-    return {"ready": Ready(data)}
+def main(data, api):
+    return {"ready": Ready(data, api=api)}
 
 __types__ = {"ready": Ready}

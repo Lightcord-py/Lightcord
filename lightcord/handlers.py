@@ -14,18 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Callable, Any
+from typing import Callable
 from lightcord.events import find_event
 from lightcord.typedata import TypeData
 import asyncio
-from inspect import signature, _empty
+from inspect import signature
+from lightcord.rest_api import RestAPI
+import aiohttp
 
 import logging
 logger = logging.getLogger(__name__)
 
 class Handlers:
-    def __init__(self):
+    def __init__(self, rest_api):
         self.handlers = {}
+        self.rest_api: RestAPI = rest_api
         
     def add_handler(self, event: str, fn: Callable, once: bool):
         arguments = find_event(event)
@@ -54,7 +57,7 @@ class Handlers:
         logger.debug(f"{event} was dispatched.")
 
         for handler in self.handlers.get(event, []):
-            if handler["data"]: arguments = handler["data"](data)
+            if handler["data"]: arguments = handler["data"](data, self.rest_api)
             else: arguments = {"event": TypeData(data)}
 
             asyncio.create_task(self.dispatch(handler["fn"], arguments))
@@ -62,5 +65,7 @@ class Handlers:
     async def dispatch(self, fn, arguments):
         try:
             await fn(**arguments)
+        except aiohttp.ClientError as e:
+            pass
         except Exception as e:
             logger.exception(f"An error occured in the handler {fn.__name__}(): {e}")

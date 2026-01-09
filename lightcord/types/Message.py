@@ -114,3 +114,21 @@ class Message(TypeData):
     resolved: ResolvedData
     poll: Poll
     call: MessageCall
+    
+    async def reply(
+        self,
+        content: str,
+        embeds: Embed | List[Embed] = None
+    ) -> Message:
+        payload = {
+            "message_reference": {
+                "channel_id": self.channel_id,
+                "message_id": self.id,
+                "guild_id": self.guild_id,
+                "type": 0
+            },
+            "type": 19
+        }
+        payload.setdefault('content', str(content))
+        
+        return Message(await self.api.request('post', f'channels/{self.channel_id}/messages', payload), self.api)

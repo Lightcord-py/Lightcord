@@ -56,3 +56,8 @@ class User(TypeData):
     public_flags: int
     primary_guild: GuildTag
     avatar_decoration_data: AvatarDecorationData
+
+    def __init__(self, data, api = None):
+        super().__init__(data, api)
+        
+        if not self.bot: self.bot = False

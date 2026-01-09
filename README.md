@@ -11,7 +11,7 @@ Part 1 - The basis
 - [X] Gateway
 - [X] Handlers
 - [X] Handlers Arguments
-- [ ] Rest API
+- [X] Rest API
 - [ ] Intents Calculation
 - [X] Logging
 

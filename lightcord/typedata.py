@@ -17,9 +17,10 @@
 # https://github.com/Lightcord-py/TypeData
 
 from typing import get_type_hints
+from lightcord.rest_api import RestAPI
 
-class TypeData:
-    def __init__(self, data: dict):
+class TypeData:    
+    def __init__(self, data: dict, api: RestAPI = None):
         """
         ## TypeData
         
@@ -43,6 +44,7 @@ class TypeData:
         """
         types = get_type_hints(self.__class__)
         self.__data__ = {}
+        self.api = api
         
         for key, value in data.items():
             self.__data__[key] = value
@@ -50,7 +52,7 @@ class TypeData:
             if isinstance(value, dict):
                 if key in types:
                     if issubclass(types[key], TypeData):
-                        value = TypeData(value)
+                        value = types[key](value, api = self.api)
             
             setattr(self, key, value)
             
@@ -60,7 +62,7 @@ class TypeData:
                 setattr(self, key, None)
 
     def __getattr__(self, name):
-        raise NameError(f"name {name} is not defined")
+        raise NameError(f"Key '{name}' is not defined.")
             
     def __getitem__(self, item):
         if hasattr(self, item):

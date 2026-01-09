@@ -26,7 +26,14 @@ from lightcord.events import events_list, events_alias
 from typing import Callable
 from inspect import iscoroutinefunction
 import asyncio
-from anyio import run as run_couroutine
+from lightcord.rest_api import RestAPI
+
+#    __ _       _     _                    _ 
+#   / /(_) __ _| |__ | |_ ___ ___  _ __ __| |
+#  / / | |/ _` | '_ \| __/ __/ _ \| '__/ _` |
+# / /__| | (_| | | | | || (_| (_) | | | (_| |
+# \____/_|\__, |_| |_|\__\___\___/|_|  \__,_|
+#         |___/                              
 
 import logging
 logger = logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -42,13 +49,11 @@ class Client():
         """
         self.intents = int(intents)
 
-        self.handlers = Handlers()
+        self.rest_api = RestAPI(token)
+        self.handlers = Handlers(self.rest_api)
         self.gateway = Gateway(token, intents)
-    
-    async def start_async(self):
-        await asyncio.create_task(self.gateway.start())
 
-    def start(self, token: str = None, intents: int | str = 0):
+    async def start_async(self, token: str = None, intents: int | str = 0):
         """Start your client, making it online and able to receive events from discord.
         
         :param token: Your private token. You can get it on your Developer Portal.
@@ -56,7 +61,7 @@ class Client():
         :param intents: The intents to send over to discord.
         :type intents: Optional[`int | str`]
         """
-        if token: self.gateway.token = token
+        if token: self.gateway.token = token; self.rest_api.token = token
         if intents: self.gateway.intents = intents
 
         # Adding events in class, for using lightcord with a class.
@@ -70,20 +75,23 @@ class Client():
 
         self.gateway.handlers = self.handlers
         
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            try:
-                asyncio.run(self.gateway.start())
-            except asyncio.CancelledError:
-                pass
-        else:
-            return self.start_async()
+        await self.gateway.start()
 
+    def start(self, token: str = None, intents: int | str = 0):
+        """Start your client, making it online and able to receive events from discord.
+        
+        :param token: Your private token. You can get it on your Developer Portal.
+        :type token: Optional[`str`]
+        :param intents: The intents to send over to discord.
+        :type intents: Optional[`int | str`]
+        """
+        
+        asyncio.run(self.start_async(token=token, intents=intents))
         
     async def stop(self) -> None:
         """Stop your client gracefully, making it offline and unable to receive events from discord."""
         await self.gateway.stop()
+        await self.rest_api.close()
         
     def on(self, event: Events = None, function: Callable = None, *, once: bool = False):
         """

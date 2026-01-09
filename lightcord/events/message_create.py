@@ -17,8 +17,8 @@
 from lightcord.types.Message import Message
 from lightcord.types.User import User
 
-def main(data):
-    message = Message(data)
+def main(data, api):
+    message = Message(data, api=api)
     return {"message": message, "user": message.author}
 
 __types__ = {"message": Message, "user": User}
