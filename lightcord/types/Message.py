@@ -121,6 +121,17 @@ class Message(TypeData):
         *,
         embeds: Embed | List[Embed] = None
     ) -> Message:
+        """
+        Reply to the message.
+        
+        :param content: Content of the message.
+        :type content: str
+        :param embeds: Embed(s) of the message.
+        :type embeds: Embed | List[Embed]
+        :return: Message object.
+        :rtype: Message
+        """
+
         payload = {
             "message_reference": {
                 "channel_id": self.channel_id,
@@ -133,3 +144,51 @@ class Message(TypeData):
         payload.setdefault('content', str(content))
         
         return Message(await self.api.request('post', f'channels/{self.channel_id}/messages', payload), self.api)
+    
+    async def send(
+        self,
+        content: str,
+        *,
+        embeds: Embed | List[Embed] = None
+    ) -> Message:
+        """
+        Send a message in the same channel as the message.
+        
+        :param content: Content of the message.
+        :type content: str
+        :param embeds: Embed(s) of the message.
+        :type embeds: Embed | List[Embed]
+        :return: Message object.
+        :rtype: Message
+        """
+
+        payload = {}
+        payload.setdefault('content', str(content))
+        
+        return Message(await self.api.request('post', f'channels/{self.channel_id}/messages', payload), self.api)
+    
+    async def edit(
+        self,
+        content: str,
+        *,
+        embeds: Embed | List[Embed] = None
+    ) -> Message:
+        """
+        Edit the message.
+        """
+
+        payload = {}
+        payload.setdefault('content', str(content))
+        
+        return Message(await self.api.request('patch', f'channels/{self.channel_id}/messages/{self.id}', payload), self.api)
+
+    async def delete(
+        self,
+    ) -> None:
+        """
+        Delete the message.
+        """
+
+        payload = {}
+        
+        await self.api.request('delete', f'channels/{self.channel_id}/messages/{self.id}', payload)
