@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from typing import Callable
-from lightcord.events import find_event
+from lightcord.events import find_event, direct_intents
 from lightcord.typedata import TypeData
 import asyncio
 from inspect import signature
@@ -33,6 +33,8 @@ class Handlers:
     def add_handler(self, event: str, fn: Callable, once: bool):
         arguments = find_event(event)
         fn_arguments = signature(fn).parameters.keys()
+        is_direct = event.startswith("DIRECT_") if event.removeprefix("DIRECT_") in direct_intents else None
+        event = event.removeprefix("DIRECT_")
 
         if arguments[1]:
             if not fn_arguments == arguments[1].keys():
@@ -49,18 +51,25 @@ class Handlers:
         self.handlers[event.upper()].append({
             "fn": fn,
             "data": arguments[0], 
-            "once": once
+            "once": once,
+            "direct": is_direct
         })
-        logger.debug(f"Successfully defined {fn} as an handler for {event.upper()} (once: {once}).")
+        logger.debug(f"Successfully defined {fn} as an handler for {event.upper()} (once: {once}, direct: {is_direct}).")
         
     async def call_handlers(self, event: str, data: dict):
         logger.debug(f"{event} was dispatched.")
+        handlers = self.handlers.get(event, [])
 
-        for handler in self.handlers.get(event, []):
-            if handler["data"]: arguments = handler["data"](data, self.rest_api)
-            else: arguments = {"event": TypeData(data)}
+        for handler in handlers[:]: # This is to make a copy
+            if handler["direct"] is None or ("guild_id" in data) == (not handler["direct"]):
 
-            asyncio.create_task(self.dispatch(handler["fn"], arguments))
+                if handler["data"]: arguments = handler["data"](data, self.rest_api)
+                else: arguments = {"event": TypeData(data)}
+
+                if handler["once"]:
+                    handlers.remove(handler)
+
+                asyncio.create_task(self.dispatch(handler["fn"], arguments))
 
     async def dispatch(self, fn, arguments):
         try:
