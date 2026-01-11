@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from typing import Callable
-from lightcord.events import find_event, direct_intents
+from lightcord.events import find_event, direct_intents, events_alias, events_list
 from lightcord.typedata import TypeData
 import asyncio
 from inspect import signature
@@ -31,10 +31,15 @@ class Handlers:
         self.rest_api: RestAPI = rest_api
         
     def add_handler(self, event: str, fn: Callable, once: bool):
+        if event in events_alias:
+            event = events_alias[event]
+        elif event not in events_list:
+            raise ValueError(f'{fn.__name__} is not a valid event.')
+
         arguments = find_event(event)
         fn_arguments = signature(fn).parameters.keys()
         is_direct = event.startswith("DIRECT_") if event.removeprefix("DIRECT_") in direct_intents else None
-        event = event.removeprefix("DIRECT_")
+        event = event.removeprefix("DIRECT_").removeprefix("ALL_")
 
         if arguments[1]:
             if not fn_arguments == arguments[1].keys():

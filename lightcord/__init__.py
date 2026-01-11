@@ -113,18 +113,8 @@ class Client():
         def decorator(fn):
             if iscoroutinefunction(fn):
                 # Checking if we can use the name of the function as the event
-                if event is None:
-                    function_name = fn.__name__.upper()
-
-                    if function_name in events_list:
-                        eventname = function_name
-                    elif function_name in events_alias:
-                        eventname = events_alias[function_name]
-                    else:
-                        raise ValueError(f'{fn.__name__} is not a valid event.')
-                else:
-                    eventname = event
-
+                if event is None: eventname = fn.__name__.upper()
+                else: eventname = event
 
                 # Making the function an handler
                 self.handlers.add_handler(eventname, fn, once)
