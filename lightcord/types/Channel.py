@@ -80,7 +80,7 @@ class Channel(TypeData):
         content: str,
         *,
         embeds: Embed | List[Embed] = None
-    ) -> Message:
+    ) -> "Message":
         from lightcord.types.Message import Message
 
         """

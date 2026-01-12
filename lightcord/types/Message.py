@@ -120,7 +120,7 @@ class Message(TypeData):
         content: str,
         *,
         embeds: Embed | List[Embed] = None
-    ) -> Message:
+    ) -> "Message":
         """
         Reply to the message.
         
@@ -150,7 +150,7 @@ class Message(TypeData):
         content: str,
         *,
         embeds: Embed | List[Embed] = None
-    ) -> Message:
+    ) -> "Message":
         """
         Send a message in the same channel as the message.
         
@@ -172,7 +172,7 @@ class Message(TypeData):
         content: str,
         *,
         embeds: Embed | List[Embed] = None
-    ) -> Message:
+    ) -> "Message":
         """
         Edit the message.
 
