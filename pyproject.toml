@@ -1,0 +1,24 @@
+[project]
+name = "lightcord"
+version = "0.0.1"
+authors = [
+  { name="Jamesfrench", email="contact@jamesfrench.fr" },
+]
+description = "A lightweight, modern and optimized Discord API wrapper for Python. "
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
+]
+license = "GPL-3.0-only"
+license-files = ["LICEN[CS]E*"]
+keywords = [ "discord", "discord-bot" ]
+dependencies = [
+    "aiohttp>=3.13.3"
+]
+
+[project.urls]
+Homepage = "https://github.com/Lightcord-py/Lightcord"
+Issues = "https://github.com/Lightcord-py/Lightcord/issues"
